@@ -8,6 +8,9 @@ VOLUME=/workspace
 # If a volume is not being used, we'll still use /worksapce to ensure everything is in a known place.
 mkdir -p $VOLUME/logs
 
+echo "Symlinking files from Network Volume"
+ln -s /runpod-volume /workspace
+
 # Start build of llama-cpp-python in background
 if [[ ! -f /.built.llama-cpp-python ]]; then
 	"$SCRIPTDIR"/build-llama-cpp-python.sh >>$VOLUME/logs/build-llama-cpp-python.log 2>&1 &
@@ -29,9 +32,9 @@ fi
 # This will block the UI until completed
 # MODEL can be a HF repo name, eg 'TheBloke/guanaco-7B-GPTQ'
 # or it can be a direct link to a single GGML file, eg 'https://huggingface.co/TheBloke/tulu-7B-GGML/resolve/main/tulu-7b.ggmlv3.q2_K.bin'
-if [[ $MODEL ]]; then
-	"$SCRIPTDIR"/fetch-model.py "$MODEL" $VOLUME/text-generation-webui/models >>$VOLUME/logs/fetch-model.log 2>&1
-fi
+# if [[ $MODEL ]]; then
+# 	"$SCRIPTDIR"/fetch-model.py "$MODEL" $VOLUME/text-generation-webui/models >>$VOLUME/logs/fetch-model.log 2>&1
+# fi
 
 # Update text-generation-webui to the latest commit
 cd /workspace/text-generation-webui && git pull
@@ -49,11 +52,11 @@ while true; do
 	# touch $VOLUME/do.not.launch.UI
 	if [[ ! -f $VOLUME/do.not.launch.UI ]]; then
 		# Launch the UI in a loop forever, allowing UI restart
-		if [[ -f /tmp/text-gen-model ]]; then
+		# if [[ -f /tmp/text-gen-model ]]; then
 			# If this file exists, we successfully downloaded a model file or folder
 			# Therefore we auto load this model
-			ARGS=(--model "$(</tmp/text-gen-model)")
-		fi
+		ARGS=(--model "TheBloke_airoboros-l2-70B-gpt4-1.4.1-GPTQ")
+		# fi
 		if [[ ${UI_ARGS} ]]; then
 			# Passed arguments in the template
 			ARGS=("${ARGS[@]}" ${UI_ARGS})
